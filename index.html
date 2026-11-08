@@ -1,228 +1,544 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Cold Email Chrome Extension | 10x Your Outbound</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OutreachAI — Turn any prospect's website into a pitch they'll answer</title>
+  <meta name="description" content="OutreachAI is a Chrome extension for web designers and agencies. Open a prospect's site, click once, and get an evidence-based audit plus a personalized cold email in about ten seconds.">
+  <meta property="og:title" content="OutreachAI — AI cold-email Chrome extension for web agencies">
+  <meta property="og:description" content="One click: audit the prospect's website, get 2–3 evidence-backed findings and a ready-to-send pitch.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+          keyframes: {
+            blob: {
+              '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+              '33%': { transform: 'translate(40px, -50px) scale(1.1)' },
+              '66%': { transform: 'translate(-30px, 30px) scale(0.95)' },
+            },
+          },
+          animation: { blob: 'blob 14s ease-in-out infinite' },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+    }
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+    .finding { opacity: 0; transform: translateY(8px); transition: opacity .4s ease, transform .4s ease; }
+    .finding.in { opacity: 1; transform: none; }
+    .caret::after { content: '▍'; color: #a5b4fc; animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    details[open] .chev { transform: rotate(180deg); }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal, .finding { transition: none; opacity: 1; transform: none; }
+      .animate-blob { animation: none; }
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 h-full flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white">
 
-    <!-- Header / Nav -->
-    <header class="w-full border-b border-slate-800/60 bg-slate-900/50 backdrop-blur-md fixed top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                    <i class="fa-solid fa-paper-plane text-white text-sm"></i>
-                </div>
-                <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">OutreachAI</span>
-            </div>
-            <span class="text-xs uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">Private Beta</span>
+  <!-- Nav -->
+  <header class="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 grid place-items-center shadow-lg shadow-indigo-500/30">
+          <i class="fa-solid fa-paper-plane text-white text-sm"></i>
         </div>
-    </header>
+        <span class="font-bold text-lg tracking-tight">Outreach<span class="text-indigo-400">AI</span></span>
+      </a>
+      <nav class="hidden md:flex items-center gap-8 text-sm text-slate-400">
+        <a href="#how" class="hover:text-white transition">How it works</a>
+        <a href="#features" class="hover:text-white transition">Features</a>
+        <a href="#pricing" class="hover:text-white transition">Pricing</a>
+        <a href="#faq" class="hover:text-white transition">FAQ</a>
+      </nav>
+      <a href="#waitlist" class="inline-flex items-center gap-2 text-sm font-semibold bg-white text-slate-900 hover:bg-indigo-50 px-4 py-2 rounded-lg transition">
+        Join the beta <i class="fa-solid fa-arrow-right text-xs"></i>
+      </a>
+    </div>
+  </header>
 
-    <!-- Main Hero Section -->
-    <main class="flex-grow pt-32 pb-20 px-6">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            
-            <!-- Left Column: Value Prop & Form -->
-            <div class="lg:col-span-5 space-y-8 text-left sticky top-28">
-                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold tracking-wide">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>AI-Powered B2B Outbound</span>
-                </div>
-                
-                <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.15]">
-                    Generate Hyper-Personalized <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-pink-400 bg-clip-text text-transparent">Cold Emails</span> in Seconds.
-                </h1>
-                
-                <p class="text-slate-400 text-lg leading-relaxed">
-                    Stop writing manual templates. Our Chrome extension audits prospect websites, detects multiple technical and conversion pain points, and drafts high-converting emails automatically.
-                </p>
+  <!-- Hero -->
+  <section class="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28">
+    <div class="absolute inset-0 grid-bg pointer-events-none"></div>
+    <div class="absolute -top-32 -left-32 w-[32rem] h-[32rem] bg-indigo-600/20 rounded-full blur-3xl animate-blob pointer-events-none"></div>
+    <div class="absolute top-20 -right-40 w-[36rem] h-[36rem] bg-violet-600/15 rounded-full blur-3xl animate-blob pointer-events-none" style="animation-delay: -6s"></div>
 
-                <!-- Signup Form Card -->
-                <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl shadow-2xl backdrop-blur-xl relative overflow-hidden">
-                    <div class="absolute -right-12 -top-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                    
-                    <form id="waitlist-form" class="space-y-4 relative z-10">
-                        <div>
-                            <label for="email" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Get Early Access</label>
-                            <div class="flex gap-2">
-                                <input type="email" id="email" required placeholder="name@company.com" 
-                                    class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
-                                <button type="submit" id="submit-btn" 
-                                    class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-3 rounded-xl text-sm transition shadow-lg shadow-indigo-600/25 flex items-center justify-center shrink-0">
-                                    <span>Join Beta</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="form-message" class="hidden text-sm font-medium py-1"></div>
-                    </form>
-                    <p class="text-xs text-slate-500 mt-3 flex items-center gap-2">
-                        <i class="fa-solid fa-shield-halved text-indigo-400"></i> No spam. Free early access for the first 100 users.
-                    </p>
-                </div>
-            </div>
-
-            <!-- Right Column: Real Extension Window (Vertical Rich Flow) -->
-            <div class="lg:col-span-7">
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden shadow-indigo-500/10">
-                    
-                    <!-- Chrome Extension Window Header Bar -->
-                    <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-3 h-3 rounded-full bg-rose-500/80"></div>
-                            <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
-                            <div class="w-3 h-3 rounded-full bg-emerald-500/80"></div>
-                            <span class="text-xs text-slate-400 ml-2 font-mono flex items-center gap-1.5">
-                                <i class="fa-solid fa-puzzle-piece text-indigo-400"></i> OutreachAI Extension — Active Panel
-                            </span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-md font-semibold flex items-center gap-1">
-                                <i class="fa-solid fa-star text-[10px]"></i> 15 Free Audits
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Extension Window Body (Vertically Expanded) -->
-                    <div class="p-6 space-y-6 bg-slate-900/90">
-                        
-                        <!-- Target Prospect Bar -->
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center font-bold">
-                                    <i class="fa-brands fa-linkedin text-lg"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-slate-400">Target Prospect</p>
-                                    <p class="text-sm font-bold text-slate-200">Mark Vance — VP of Engineering @ CloudScale</p>
-                                </div>
-                            </div>
-                            <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-lg font-mono font-bold">
-                                Score: 68/100
-                            </span>
-                        </div>
-
-                        <!-- Section: 3 Deep Audit Issues Found -->
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between text-xs text-slate-400 px-1">
-                                <span class="font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                                    <i class="fa-solid fa-magnifying-glass-chart text-indigo-400"></i> Instant Website Audit (3 Issues Detected)
-                                </span>
-                                <span class="text-rose-400 font-mono">Actionable Insights</span>
-                            </div>
-
-                            <!-- Issue 1 -->
-                            <div class="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl flex items-start space-x-3">
-                                <div class="w-6 h-6 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">1</div>
-                                <div>
-                                    <p class="text-xs font-bold text-slate-200">High API Latency Spikes</p>
-                                    <p class="text-xs text-slate-400 mt-0.5">P99 response times degrade past 800ms during regional traffic peaks due to unoptimized queries.</p>
-                                </div>
-                            </div>
-
-                            <!-- Issue 2 -->
-                            <div class="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl flex items-start space-x-3">
-                                <div class="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">2</div>
-                                <div>
-                                    <p class="text-xs font-bold text-slate-200">Outdated Caching Layer</p>
-                                    <p class="text-xs text-slate-400 mt-0.5">Missing edge-caching headers on heavy asset endpoints, causing unnecessary database load.</p>
-                                </div>
-                            </div>
-
-                            <!-- Issue 3 -->
-                            <div class="bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl flex items-start space-x-3">
-                                <div class="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">3</div>
-                                <div>
-                                    <p class="text-xs font-bold text-slate-200">Missing Real-time Telemetry</p>
-                                    <p class="text-xs text-slate-400 mt-0.5">No active APM tool detected to trace asynchronous worker bottlenecks in microservices.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Section: Generated Cold Email Result -->
-                        <div class="space-y-3 pt-2">
-                            <div class="flex items-center justify-between text-xs text-slate-400 px-1">
-                                <span class="font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i> Generated Custom Cold Email
-                                </span>
-                                <span class="text-emerald-400 font-mono">98% Match Score</span>
-                            </div>
-
-                            <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2 font-mono text-xs text-slate-300">
-                                <p class="text-slate-400 border-b border-slate-900 pb-2"><strong class="text-slate-200">Subject:</strong> Quick question regarding CloudScale's p99 latency</p>
-                                <p class="text-slate-300 leading-relaxed pt-1">
-                                    Hi Mark,<br><br>
-                                    Noticed during our scan that CloudScale experiences p99 spikes past 800ms under heavy regional loads. At GrowthIO, we help engineering teams cut latency by 34% without refactoring core services.<br><br>
-                                    Open to a 5-minute peek at how we do it this Thursday?
-                                </p>
-                            </div>
-
-                            <div class="flex items-center justify-between pt-2">
-                                <span class="text-[11px] text-slate-500">Tailored directly from the 3 audit pain points above.</span>
-                                <button class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-600/20">
-                                    <i class="fa-solid fa-copy"></i> Copy Complete Email
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
+    <div class="relative max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-14 items-start">
+      <!-- Copy + form -->
+      <div class="lg:col-span-5 space-y-8 lg:sticky lg:top-28">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold tracking-wide">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Built for web designers &amp; agencies
         </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="w-full border-t border-slate-800/60 py-6 text-center text-xs text-slate-500">
-        <p>&copy; 2026 OutreachAI. All rights reserved. Built for modern outbound teams.</p>
-    </footer>
+        <h1 class="text-4xl sm:text-5xl xl:text-[3.4rem] font-extrabold tracking-tight leading-[1.1]">
+          Turn any prospect's website into a pitch they'll
+          <span class="bg-gradient-to-r from-indigo-400 via-violet-400 to-pink-400 bg-clip-text text-transparent">actually answer.</span>
+        </h1>
 
-    <!-- JavaScript to handle form submission via Google Apps Script -->
-    <script>
-        const GOOGLE_SCRIPT_URL = "YOUR_WEB_APP_URL_HERE"; // החלף כאן בקישור שלך מ-Google Apps Script
+        <p class="text-lg text-slate-400 leading-relaxed">
+          Open a prospect's site, click once. OutreachAI scans 35+ conversion, trust and speed signals, ranks what's costing them customers, and writes a cold email that quotes the evidence — in about ten seconds.
+        </p>
 
-        const form = document.getElementById('waitlist-form');
-        const submitBtn = document.getElementById('submit-btn');
-        const formMessage = document.getElementById('form-message');
+        <!-- Waitlist form -->
+        <div id="waitlist" class="relative bg-slate-900/80 border border-white/10 p-6 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden scroll-mt-28">
+          <div class="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/15 rounded-full blur-2xl pointer-events-none"></div>
+          <form id="waitlist-form" class="relative z-10 space-y-3" novalidate>
+            <label for="email" class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Get early access</label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@youragency.com"
+                class="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition">
+              <!-- honeypot: real users never see or fill this -->
+              <input type="text" name="company_website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
+              <button type="submit" id="submit-btn"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl text-sm transition shadow-lg shadow-indigo-600/25 grid place-items-center min-w-[8.5rem]">
+                <span>Join the beta</span>
+              </button>
+            </div>
+            <p id="form-message" class="hidden text-sm font-medium"></p>
+          </form>
+          <p class="relative z-10 text-xs text-slate-500 mt-4 flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-indigo-400"></i>
+            Free for the first 100 agencies. 15 audits included, no card needed.
+          </p>
+        </div>
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            
-            // UI Loading state
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
-            formMessage.classList.add('hidden');
+        <!-- Stats -->
+        <dl class="grid grid-cols-3 gap-4 pt-2">
+          <div><dt class="text-2xl font-extrabold">35+</dt><dd class="text-xs text-slate-500 mt-1">signals scanned per site</dd></div>
+          <div><dt class="text-2xl font-extrabold">~10s</dt><dd class="text-xs text-slate-500 mt-1">from click to pitch</dd></div>
+          <div><dt class="text-2xl font-extrabold">&lt;120</dt><dd class="text-xs text-slate-500 mt-1">words — every email</dd></div>
+        </dl>
+      </div>
 
-            try {
-                // Sending data to Google Sheets via fetch
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: email })
-                });
+      <!-- Live demo: browser + popup -->
+      <div class="lg:col-span-7" id="demo">
+        <div class="relative rounded-2xl border border-white/10 bg-slate-900 shadow-2xl shadow-indigo-500/10 overflow-hidden">
+          <!-- Browser chrome -->
+          <div class="flex items-center gap-3 px-4 py-3 bg-slate-950 border-b border-white/5">
+            <div class="flex gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+            </div>
+            <div class="flex-1 mx-2 bg-slate-900 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-slate-400 font-mono flex items-center gap-2">
+              <i class="fa-solid fa-lock text-[10px] text-emerald-400"></i> harborlanedental.com
+            </div>
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-violet-500 grid place-items-center shadow-lg shadow-indigo-500/40 ring-2 ring-indigo-400/40">
+              <i class="fa-solid fa-paper-plane text-white text-xs"></i>
+            </div>
+          </div>
 
-                // Success state
-                formMessage.textContent = "🎉 You're on the list! We'll email you beta access soon.";
-                formMessage.className = "text-xs font-medium py-1 text-emerald-400";
-                formMessage.classList.remove('hidden');
-                form.reset();
-            } catch (error) {
-                // Error handling fallback
-                formMessage.textContent = "⚠️ Something went wrong. Please try again.";
-                formMessage.className = "text-xs font-medium py-1 text-rose-400";
-                formMessage.classList.remove('hidden');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span>Join Beta</span>';
-            }
+          <div class="relative bg-slate-900 p-3 sm:p-5 flex justify-end min-h-[420px]">
+            <!-- Dimmed prospect website skeleton -->
+            <div class="absolute inset-0 p-8 space-y-5 opacity-40 select-none pointer-events-none overflow-hidden" aria-hidden="true">
+              <div class="flex items-center justify-between">
+                <div class="h-5 w-40 rounded bg-slate-700"></div>
+                <div class="flex gap-3"><div class="h-3 w-14 rounded bg-slate-700"></div><div class="h-3 w-14 rounded bg-slate-700"></div><div class="h-3 w-14 rounded bg-slate-700"></div></div>
+              </div>
+              <div class="h-52 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800"></div>
+              <div class="h-4 w-3/4 rounded bg-slate-700"></div>
+              <div class="h-3 w-1/2 rounded bg-slate-800"></div>
+              <div class="grid grid-cols-3 gap-4 pt-2">
+                <div class="h-28 rounded-xl bg-slate-800"></div><div class="h-28 rounded-xl bg-slate-800"></div><div class="h-28 rounded-xl bg-slate-800"></div>
+              </div>
+            </div>
+
+            <!-- Extension popup (mirrors the real popup.html) -->
+            <div class="relative w-full sm:w-[380px] rounded-xl border border-slate-700 bg-slate-800 shadow-2xl shadow-black/60 p-4 text-[13px]">
+              <div class="flex items-center justify-between">
+                <h2 class="font-bold text-base">Outreach AI</h2>
+                <span id="demo-badge" class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-gradient-to-br from-amber-400/20 to-amber-500/10 text-amber-300 border border-amber-400/50 shadow-[0_0_8px_rgba(251,191,36,0.15)]">
+                  <i class="fa-solid fa-star text-[10px] text-amber-400 drop-shadow-[0_0_2px_rgba(251,191,36,0.7)]"></i>
+                  <span id="demo-credits">15 Credits Left</span>
+                </span>
+              </div>
+              <p class="flex items-center justify-between text-xs text-slate-400 mt-2 mb-3">
+                <span>studio@brightpixel.design</span><span class="text-indigo-400">Log out</span>
+              </p>
+
+              <button id="demo-btn" type="button" class="w-full py-2.5 rounded-md bg-indigo-500 hover:bg-indigo-600 font-semibold text-white transition disabled:bg-slate-700 disabled:text-slate-400">
+                Audit &amp; Generate Pitch
+              </button>
+
+              <div id="demo-output" class="hidden mt-3.5">
+                <p class="text-xs text-slate-400 mb-2.5"><strong class="text-slate-100">Harbor Lane Dental</strong> — Family and cosmetic dentistry practice in Portland, OR.</p>
+
+                <p class="text-[11px] text-slate-400 mb-1">Audit Findings:</p>
+                <ul class="space-y-1.5 mb-3">
+                  <li class="finding rounded-md bg-slate-900 border border-slate-700 border-l-[3px] border-l-rose-500 p-2 text-xs">
+                    <div class="flex justify-between gap-2 font-semibold"><span>No one-tap way to get in touch</span><span class="text-[10px] uppercase text-slate-400">high</span></div>
+                    <p class="text-slate-400 mt-1">Evidence: <span class="text-slate-100">0 tel: links, 0 forms; phone number only as plain text in the footer</span></p>
+                    <p class="text-slate-400 mt-0.5">Impact: <span class="text-slate-100">Mobile visitors can't tap to call, and most new-patient searches happen on a phone.</span></p>
+                    <p class="text-slate-400 mt-0.5">Quick win: <span class="text-slate-100">Sticky "Call now" button plus a three-field appointment form.</span></p>
+                  </li>
+                  <li class="finding rounded-md bg-slate-900 border border-slate-700 border-l-[3px] border-l-amber-500 p-2 text-xs">
+                    <div class="flex justify-between gap-2 font-semibold"><span>No social proof on the page</span><span class="text-[10px] uppercase text-slate-400">medium</span></div>
+                    <p class="text-slate-400 mt-1">Evidence: <span class="text-slate-100">0 mentions of reviews, testimonials or awards in 1,240 words of copy</span></p>
+                    <p class="text-slate-400 mt-0.5">Impact: <span class="text-slate-100">New patients have no reason to choose you over the clinic next door.</span></p>
+                    <p class="text-slate-400 mt-0.5">Quick win: <span class="text-slate-100">Embed Google reviews above the fold.</span></p>
+                  </li>
+                  <li class="finding rounded-md bg-slate-900 border border-slate-700 border-l-[3px] border-l-amber-500 p-2 text-xs">
+                    <div class="flex justify-between gap-2 font-semibold"><span>Page is slow to load</span><span class="text-[10px] uppercase text-slate-400">medium</span></div>
+                    <p class="text-slate-400 mt-1">Evidence: <span class="text-slate-100">Fully loaded in 6.4s — 4.8 MB over 92 requests, 9 images not lazy-loaded</span></p>
+                    <p class="text-slate-400 mt-0.5">Impact: <span class="text-slate-100">Every extra second costs bookings, especially on mobile data.</span></p>
+                    <p class="text-slate-400 mt-0.5">Quick win: <span class="text-slate-100">Compress images and lazy-load everything below the fold.</span></p>
+                  </li>
+                </ul>
+
+                <p class="text-[11px] text-slate-400 mb-1">Subject:</p>
+                <div id="demo-subject" class="rounded-md bg-slate-900 border border-slate-700 px-2.5 py-2 text-xs min-h-[2.1rem] mb-2.5"></div>
+
+                <p class="text-[11px] text-slate-400 mb-1">Cold Pitch:</p>
+                <div id="demo-body" class="rounded-md bg-slate-900 border border-slate-700 px-2.5 py-2 text-xs leading-relaxed whitespace-pre-wrap min-h-[11rem]"></div>
+
+                <div class="flex gap-[4%] mt-2">
+                  <button type="button" class="w-[48%] py-2 rounded-md bg-slate-700 hover:bg-slate-600 font-semibold text-xs transition"><i class="fa-solid fa-copy mr-1.5"></i>Copy Pitch</button>
+                  <button type="button" class="w-[48%] py-2 rounded-md bg-slate-700 hover:bg-slate-600 font-semibold text-xs transition"><i class="fa-brands fa-google mr-1.5"></i>Open Gmail</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between mt-3 text-xs text-slate-500 px-1">
+          <span><i class="fa-solid fa-circle-info mr-1.5 text-indigo-400"></i>Real output format. Sample prospect data.</span>
+          <button id="demo-replay" type="button" class="hidden hover:text-white transition"><i class="fa-solid fa-rotate-right mr-1.5"></i>Replay demo</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" class="py-24 border-t border-white/5 scroll-mt-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="max-w-2xl reveal">
+        <p class="text-indigo-400 text-sm font-semibold uppercase tracking-wider">How it works</p>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight">From "who is this?" to "yes, send it" in three clicks.</h2>
+        <p class="mt-4 text-slate-400 text-lg">No CRM to set up, no templates to maintain. The extension works on whatever site is in front of you.</p>
+      </div>
+      <div class="mt-14 grid md:grid-cols-3 gap-6">
+        <div class="reveal relative rounded-2xl border border-white/10 bg-slate-900/60 p-7">
+          <span class="absolute top-6 right-6 text-5xl font-black text-white/5">01</span>
+          <div class="w-11 h-11 rounded-xl bg-indigo-500/15 text-indigo-400 grid place-items-center text-lg"><i class="fa-brands fa-chrome"></i></div>
+          <h3 class="mt-5 font-bold text-lg">Open the prospect's site</h3>
+          <p class="mt-2 text-slate-400 text-sm leading-relaxed">Any business website — the plumber, the dentist, the boutique hotel. Click the OutreachAI icon in your toolbar.</p>
+        </div>
+        <div class="reveal relative rounded-2xl border border-white/10 bg-slate-900/60 p-7" style="transition-delay:.1s">
+          <span class="absolute top-6 right-6 text-5xl font-black text-white/5">02</span>
+          <div class="w-11 h-11 rounded-xl bg-violet-500/15 text-violet-400 grid place-items-center text-lg"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+          <h3 class="mt-5 font-bold text-lg">One click to audit</h3>
+          <p class="mt-2 text-slate-400 text-sm leading-relaxed">We read the page in your browser: calls-to-action, tap-to-call, forms, social proof, copyright year, load time, image weight, SEO basics and more.</p>
+        </div>
+        <div class="reveal relative rounded-2xl border border-white/10 bg-slate-900/60 p-7" style="transition-delay:.2s">
+          <span class="absolute top-6 right-6 text-5xl font-black text-white/5">03</span>
+          <div class="w-11 h-11 rounded-xl bg-pink-500/15 text-pink-400 grid place-items-center text-lg"><i class="fa-solid fa-envelope-open-text"></i></div>
+          <h3 class="mt-5 font-bold text-lg">Copy the pitch or open Gmail</h3>
+          <p class="mt-2 text-slate-400 text-sm leading-relaxed">Subject line and email arrive pre-written and personalized. Tweak a word if you like, then send.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Evidence section -->
+  <section class="py-24 border-t border-white/5 bg-slate-900/30">
+    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-14 items-center">
+      <div class="reveal">
+        <p class="text-indigo-400 text-sm font-semibold uppercase tracking-wider">No made-up findings</p>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight">Every sentence traces back to a data point.</h2>
+        <p class="mt-4 text-slate-400 text-lg leading-relaxed">Generic AI tools invent "outdated design" and "weak messaging". Prospects can smell it. OutreachAI only reports what the scan actually measured, quotes the number, and translates it into business impact.</p>
+        <ul class="mt-8 space-y-4 text-sm">
+          <li class="flex gap-3"><i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i><span><strong class="text-white">Grounded by design.</strong> The AI is forbidden from commenting on colours, layout or imagery it can't see.</span></li>
+          <li class="flex gap-3"><i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i><span><strong class="text-white">Ranked by revenue.</strong> Lost leads first, then lost trust, lost traffic, speed — not by how technical the issue sounds.</span></li>
+          <li class="flex gap-3"><i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i><span><strong class="text-white">Honest when the site is good.</strong> Fewer findings beat padded ones. Severity "low" is allowed.</span></li>
+        </ul>
+      </div>
+      <div class="reveal rounded-2xl border border-white/10 bg-slate-950 p-6 font-mono text-xs leading-relaxed shadow-2xl">
+        <p class="text-slate-500">// what the scan sends to the model (excerpt)</p>
+        <pre class="mt-3 text-slate-300 overflow-x-auto">{
+  "conversion": { "ctaTexts": [], "forms": 0, "phoneLinks": <span class="text-rose-400">0</span>, "chatWidget": false },
+  "trust":      { "socialProofMentions": <span class="text-amber-400">0</span>, "copyrightYear": "2019", "https": true },
+  "performance":{ "fullyLoadedMs": <span class="text-amber-400">6400</span>, "transferKB": 4812, "requests": 92 },
+  "images":     { "total": 14, "lazyLoaded": 5, "nextGenFormat": 0, "oversized": 6 }
+}</pre>
+        <div class="mt-5 flex items-center gap-3 text-slate-500">
+          <div class="h-px flex-1 bg-white/10"></div><i class="fa-solid fa-arrow-down"></i><div class="h-px flex-1 bg-white/10"></div>
+        </div>
+        <p class="mt-5 text-slate-300"><span class="text-rose-400">HIGH</span> · No one-tap way to get in touch<br><span class="text-slate-500">evidence:</span> "0 tel: links, 0 forms" <span class="text-slate-500">→ impact:</span> "mobile visitors can't tap to call"</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-24 border-t border-white/5 scroll-mt-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="max-w-2xl reveal">
+        <p class="text-indigo-400 text-sm font-semibold uppercase tracking-wider">Features</p>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight">Built around how agencies actually prospect.</h2>
+      </div>
+      <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="reveal rounded-2xl border border-white/10 bg-slate-900/60 p-6 hover:border-indigo-500/40 transition">
+          <div class="w-10 h-10 rounded-lg bg-indigo-500/15 text-indigo-400 grid place-items-center"><i class="fa-solid fa-bolt"></i></div>
+          <h3 class="mt-4 font-bold">35+ signals in one scan</h3>
+          <p class="mt-2 text-sm text-slate-400 leading-relaxed">CTAs, tap-to-call, forms, chat widgets, social proof, schema.org data, copyright year, viewport tag, CMS, jQuery, load time, request count, image weight, alt text, Open Graph, canonical, favicon.</p>
+        </div>
+        <div class="reveal rounded-2xl border border-white/10 bg-slate-900/60 p-6 hover:border-indigo-500/40 transition" style="transition-delay:.05s">
+          <div class="w-10 h-10 rounded-lg bg-violet-500/15 text-violet-400 grid place-items-center"><i class="fa-solid fa-user-pen"></i></div>
+          <h3 class="mt-4 font-bold">Reads like you wrote it</h3>
+          <p class="mt-2 text-sm text-slate-400 leading-relaxed">Under 120 words. No "hope this finds you well", no exclamation marks, no spam-trigger words. One finding, one quick win, one-word reply as the ask.</p>
+        </div>
+        <div class="reveal rounded-2xl border border-white/10 bg-slate-900/60 p-6 hover:border-indigo-500/40 transition" style="transition-delay:.1s">
+          <div class="w-10 h-10 rounded-lg bg-pink-500/15 text-pink-400 grid place-items-center"><i class="fa-solid fa-heading"></i></div>
+          <h3 class="mt-4 font-bold">Subject lines included</h3>
+          <p class="mt-2 text-sm text-slate-400 leading-relaxed">Three to seven words, specific to their site, lowercase-human. The kind that gets opened because it doesn't look like a campaign.</p>
+        </div>
+        <div class="reveal rounded-2xl border border-white/10 bg-slate-900/60 p-6 hover:border-indigo-500/40 transition" style="transition-delay:.15s">
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/15 text-emerald-400 grid place-items-center"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <h3 class="mt-4 font-bold">Quick wins you can actually deliver</h3>
+          <p class="mt-2 text-sm text-slate-400 leading-relaxed">Each finding comes with a fix an agency can ship in a day or two — the natural first project with a new client.</p>
+        </div>
+        <div class="reveal rounded-2xl border border-white/10 bg-slate-900/60 p-6 hover:border-indigo-500/40 transition" style="transition-delay:.2s">
+          <div class="w-10 h-10 rounded-lg bg-sky-500/15 text-sky-400 grid place-items-center"><i class="fa-brands fa-google"></i></div>
+          <h3 class="mt-4 font-bold">Copy or open Gmail, prefilled</h3>
+          <p class="mt-2 text-sm text-slate-400 leading-relaxed">Subject and body land in a Gmail compose window with one click. Zero retyping, zero tab juggling.</p>
+        </div>
+        <div class="reveal rounded-2xl border border-white/10 bg-slate-900/60 p-6 hover:border-indigo-500/40 transition" style="transition-delay:.25s">
+          <div class="w-10 h-10 rounded-lg bg-amber-500/15 text-amber-400 grid place-items-center"><i class="fa-solid fa-shield-halved"></i></div>
+          <h3 class="mt-4 font-bold">Privacy-first scanning</h3>
+          <p class="mt-2 text-sm text-slate-400 leading-relaxed">The scan runs in your browser on the public page you're viewing. We never read your browsing history or other tabs.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="py-24 border-t border-white/5 bg-slate-900/30 scroll-mt-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="max-w-2xl mx-auto text-center reveal">
+        <p class="text-indigo-400 text-sm font-semibold uppercase tracking-wider">Pricing</p>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight">One closed client pays for a decade of Pro.</h2>
+        <p class="mt-4 text-slate-400 text-lg">Start free. Upgrade when the replies start coming in.</p>
+      </div>
+      <div class="mt-14 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div class="reveal rounded-2xl border border-white/10 bg-slate-900/60 p-8 flex flex-col">
+          <h3 class="font-bold text-lg">Free</h3>
+          <p class="mt-1 text-sm text-slate-400">Try it on real prospects.</p>
+          <p class="mt-6"><span class="text-4xl font-extrabold">$0</span></p>
+          <ul class="mt-6 space-y-3 text-sm text-slate-300 flex-1">
+            <li class="flex gap-3"><i class="fa-solid fa-star text-amber-400 mt-0.5"></i>15 audits, every feature included</li>
+            <li class="flex gap-3"><i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>Evidence-based findings</li>
+            <li class="flex gap-3"><i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>Subject line + email</li>
+            <li class="flex gap-3"><i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>Copy &amp; Gmail buttons</li>
+          </ul>
+          <a href="#waitlist" class="mt-8 inline-flex justify-center items-center gap-2 rounded-xl border border-white/15 hover:border-white/30 px-5 py-3 text-sm font-semibold transition">Get early access</a>
+        </div>
+        <div class="reveal relative rounded-2xl border border-indigo-500/50 bg-gradient-to-b from-indigo-500/10 to-slate-900/60 p-8 flex flex-col shadow-2xl shadow-indigo-500/10" style="transition-delay:.1s">
+          <span class="absolute -top-3 left-6 text-[11px] font-bold uppercase tracking-wider bg-gradient-to-r from-indigo-500 to-violet-500 text-white px-3 py-1 rounded-full">Free during beta</span>
+          <h3 class="font-bold text-lg">Pro</h3>
+          <p class="mt-1 text-sm text-slate-400">For agencies prospecting every week.</p>
+          <p class="mt-6"><span class="text-4xl font-extrabold">$39</span><span class="text-slate-400 text-sm">/month</span></p>
+          <ul class="mt-6 space-y-3 text-sm text-slate-300 flex-1">
+            <li class="flex gap-3"><i class="fa-solid fa-infinity text-indigo-400 mt-0.5"></i>Unlimited audits and pitches</li>
+            <li class="flex gap-3"><i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>Everything in Free</li>
+            <li class="flex gap-3"><i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>New signals and templates first</li>
+            <li class="flex gap-3"><i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>Priority support</li>
+          </ul>
+          <a href="#waitlist" class="mt-8 inline-flex justify-center items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 transition">Join the beta <i class="fa-solid fa-arrow-right text-xs"></i></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="py-24 border-t border-white/5 scroll-mt-20">
+    <div class="max-w-3xl mx-auto px-6">
+      <div class="text-center reveal">
+        <p class="text-indigo-400 text-sm font-semibold uppercase tracking-wider">FAQ</p>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight">Questions agencies ask us</h2>
+      </div>
+      <div class="mt-12 space-y-3">
+        <details class="reveal group rounded-xl border border-white/10 bg-slate-900/60 p-5">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold">Does the AI make things up about the site?<i class="fa-solid fa-chevron-down chev text-slate-500 transition"></i></summary>
+          <p class="mt-3 text-sm text-slate-400 leading-relaxed">No. Every finding must quote a measured data point from the scan, and the model is explicitly blocked from commenting on anything it can't see — colours, layout, imagery, "feel". If a site is in good shape, you get fewer findings, not padded ones.</p>
+        </details>
+        <details class="reveal group rounded-xl border border-white/10 bg-slate-900/60 p-5">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold">Which websites does it work on?<i class="fa-solid fa-chevron-down chev text-slate-500 transition"></i></summary>
+          <p class="mt-3 text-sm text-slate-400 leading-relaxed">Any public page you can open in Chrome: WordPress, Wix, Squarespace, Shopify, hand-coded sites. The scan reads the rendered page, so it doesn't depend on the platform.</p>
+        </details>
+        <details class="reveal group rounded-xl border border-white/10 bg-slate-900/60 p-5">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold">Can I change the tone or add my offer?<i class="fa-solid fa-chevron-down chev text-slate-500 transition"></i></summary>
+          <p class="mt-3 text-sm text-slate-400 leading-relaxed">The email uses placeholders for your name and agency, and the pitch is short enough to edit in seconds. Custom voice and offer presets are on the Pro roadmap.</p>
+        </details>
+        <details class="reveal group rounded-xl border border-white/10 bg-slate-900/60 p-5">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold">What do you store?<i class="fa-solid fa-chevron-down chev text-slate-500 transition"></i></summary>
+          <p class="mt-3 text-sm text-slate-400 leading-relaxed">Your account email, and the URL and date of each audit so we can count your free credits. The page scan is used to write the pitch and isn't sold or shared.</p>
+        </details>
+        <details class="reveal group rounded-xl border border-white/10 bg-slate-900/60 p-5">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold">When does the beta open?<i class="fa-solid fa-chevron-down chev text-slate-500 transition"></i></summary>
+          <p class="mt-3 text-sm text-slate-400 leading-relaxed">We're onboarding agencies from the waitlist in small batches. Join above and you'll get an email with the install link — the first 100 get Pro free during the beta.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="py-24 border-t border-white/5">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="reveal relative overflow-hidden rounded-3xl border border-indigo-500/30 bg-gradient-to-br from-indigo-600/20 via-violet-600/10 to-slate-900 p-10 sm:p-14 text-center">
+        <div class="absolute -top-20 -right-20 w-72 h-72 bg-violet-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <h2 class="relative text-3xl sm:text-4xl font-extrabold tracking-tight">Your next client's website has a problem.<br class="hidden sm:block"> Be the one who points it out.</h2>
+        <p class="relative mt-4 text-slate-300 text-lg">Join the beta and get 15 free audits the day we onboard you.</p>
+        <a href="#waitlist" class="relative mt-8 inline-flex items-center gap-2 rounded-xl bg-white text-slate-900 hover:bg-indigo-50 px-6 py-3.5 font-semibold transition">Join the beta <i class="fa-solid fa-arrow-right text-xs"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-white/5 py-8">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-md bg-gradient-to-tr from-indigo-600 to-violet-500 grid place-items-center"><i class="fa-solid fa-paper-plane text-white text-[10px]"></i></div>
+        <span>&copy; 2026 OutreachAI. Built for web designers and agencies.</span>
+      </div>
+      <span>Chrome extension · Private beta</span>
+    </div>
+  </footer>
+
+  <script>
+    // ---------- Waitlist form (Google Apps Script web app) ----------
+    const GOOGLE_SCRIPT_URL = "YOUR_WEB_APP_URL_HERE"; // Replace with your Apps Script web-app URL
+
+    const form = document.getElementById('waitlist-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const formMessage = document.getElementById('form-message');
+
+    function showMessage(text, tone) {
+      formMessage.textContent = text;
+      formMessage.className = `text-sm font-medium ${tone === 'ok' ? 'text-emerald-400' : tone === 'warn' ? 'text-amber-400' : 'text-rose-400'}`;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = form.email.value.trim();
+      if (form.company_website.value) return; // bot filled the honeypot
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showMessage('Please enter a valid email address.', 'err');
+      if (GOOGLE_SCRIPT_URL.includes('YOUR_WEB_APP_URL')) {
+        return showMessage('Waitlist form is not connected yet: set GOOGLE_SCRIPT_URL in index.html.', 'warn');
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
+      try {
+        // no-cors: the request is delivered but the response is opaque, so success is assumed when fetch resolves.
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ email, source: location.hostname, ts: new Date().toISOString() }),
         });
-    </script>
+        showMessage("You're on the list. We'll email your beta invite soon.", 'ok');
+        form.reset();
+      } catch {
+        showMessage('Something went wrong. Please try again in a moment.', 'err');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Join the beta</span>';
+      }
+    });
+
+    // ---------- Scroll reveal ----------
+    const revealObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) if (entry.isIntersecting) { entry.target.classList.add('in'); revealObserver.unobserve(entry.target); }
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+
+    // ---------- Extension demo (mirrors the real popup flow) ----------
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const demoBtn = document.getElementById('demo-btn');
+    const demoOutput = document.getElementById('demo-output');
+    const demoSubject = document.getElementById('demo-subject');
+    const demoBody = document.getElementById('demo-body');
+    const demoCredits = document.getElementById('demo-credits');
+    const demoReplay = document.getElementById('demo-replay');
+    const findings = [...document.querySelectorAll('#demo-output .finding')];
+
+    const SUBJECT = 'quick note about harbor lane dental';
+    const BODY = `Hi Dr. Patel,
+
+I was on the Harbor Lane Dental site this morning and noticed one thing worth flagging: there is no tap-to-call button, so anyone searching on their phone has to copy your number by hand. For a practice where most new-patient searches happen on mobile, that is bookings quietly slipping away.
+
+A sticky "Call now" button plus a three-field appointment form is a one-day fix. If it would help, reply "yes" and I'll send a two-minute screen recording showing exactly what I would change.
+
+[Your Name]
+[Agency]`;
+
+    const wait = (ms) => new Promise((r) => setTimeout(r, reducedMotion ? 0 : ms));
+
+    async function type(el, text, speed) {
+      el.textContent = '';
+      if (reducedMotion) { el.textContent = text; return; }
+      el.classList.add('caret');
+      for (const ch of text) {
+        el.textContent += ch;
+        await wait(ch === '\n' ? speed * 6 : speed);
+      }
+      el.classList.remove('caret');
+    }
+
+    let running = false;
+    async function runDemo() {
+      if (running) return;
+      running = true;
+      demoReplay.classList.add('hidden');
+      demoOutput.classList.add('hidden');
+      findings.forEach((f) => f.classList.remove('in'));
+      demoSubject.textContent = '';
+      demoBody.textContent = '';
+      demoCredits.textContent = '15 Credits Left';
+
+      demoBtn.disabled = true;
+      demoBtn.textContent = 'Scanning DOM...';
+      await wait(900);
+      demoBtn.textContent = 'Generating AI Pitch...';
+      await wait(1400);
+      demoBtn.textContent = 'Audit Complete!';
+      demoCredits.textContent = '14 Credits Left';
+      demoOutput.classList.remove('hidden');
+      for (const f of findings) { f.classList.add('in'); await wait(260); }
+      await wait(200);
+      await type(demoSubject, SUBJECT, 22);
+      await type(demoBody, BODY, 9);
+
+      demoBtn.disabled = false;
+      demoBtn.textContent = 'Audit & Generate Pitch';
+      demoReplay.classList.remove('hidden');
+      running = false;
+    }
+
+    demoBtn.addEventListener('click', runDemo);
+    demoReplay.addEventListener('click', runDemo);
+
+    const demoObserver = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { demoObserver.disconnect(); setTimeout(runDemo, 600); }
+    }, { threshold: 0.35 });
+    demoObserver.observe(document.getElementById('demo'));
+  </script>
 </body>
 </html>
